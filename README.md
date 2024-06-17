@@ -19,6 +19,21 @@ local NPCS = {}
         end
     end
 end
+
+local function getNPC()
+    local dist, thing = math.huge
+    for i, v in pairs(workspace.NPC.Fight:GetDescendants()) do
+        if v:IsA "Model" and v:FindFirstChild("HumanoidRootPart") and v.Name == mobname then
+            local mag = (game.Players.LocalPlayer.Character.HumanoidRootPart.Position - v.Parent.Position).magnitude
+            if mag < dist then
+                dist = mag
+                thing = v
+            end
+        end
+    end
+    return thing
+end
+
 local Dropdown = Section:CreateDropdown("Select Mobs !", NPCS, 0, function(t)
     PlayerTP1 = t
 end)
@@ -36,36 +51,9 @@ end)
 local Toggle = Section:CreateToggle("Auto [Hit]", function(Value)
 Hit = Value
 while Hit do task.wait(1)  -- Wait for 1 second before checking for enemies
-pcall(function()
-for i,v in pairs(workspace.NPC.Fight:GetDescendants()) do
-if v.Name == PlayerTP1 then
-if v.Humanoid.Health > 0 then
-repeat
-    local args = {
-        [1] = "Combat",
-        [2] = 999,
-        [3] = "left",
-        [4] = 999,
-        [5] = "Combat"
-    }
-    
-    game:GetService("ReplicatedStorage"):WaitForChild("Remotes"):WaitForChild("ServerMove"):FireServer(unpack(args))
-game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame = v.HumanoidRootPart.CFrame * CFrame.new(0,0,4)
-wait()  -- Wait a short time before checking again
-until not _G.Hit or v.Humanoid.Health <= 0
-end
-end
-end
-end)
-local Player = game.Players.LocalPlayer
-local function onCharacterAdded(character)
-    character.Archivable = false
-    character:WaitForChild("HumanoidRootPart").Anchored = false
-    if Player.Character then
-        onCharacterAdded(Player.Character)
-    end
-end
-
-Player.CharacterAdded:Connect(onCharacterAdded)
+    pcall(function()
+                    
+        game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame = getNPC().UpperTorso.CFrame
+    end)
 end
 end)
