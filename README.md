@@ -35,7 +35,7 @@ local Button = Section:CreateButton("Refresh [Mob]", function(Value)
 end)
 local Toggle = Section:CreateToggle("Auto [Hit]", function(Value)
 Hit = Value
-while Hit do task.wait()  -- Wait for 1 second before checking for enemies
+while Hit do task.wait(1)  -- Wait for 1 second before checking for enemies
 pcall(function()
 for i,v in pairs(workspace.NPC.Fight:GetDescendants()) do
 if v.Name == PlayerTP1 then
