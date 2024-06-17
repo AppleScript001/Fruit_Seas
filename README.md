@@ -11,53 +11,57 @@ end)
 local Window = Library:NewWindow("Fruit Seas")
 local Section = Window:NewSection("AutoFarm")
 
-local Hit = false
 local NPCS = {}
 
--- Function to get the nearest NPC based on the current target mobname
-local function getNPC(mobname)
-    local dist, nearestNPC
-    for i, v in pairs(workspace.NPC.Fight:GetDescendants()) do
-        if v:IsA("Model") and v:FindFirstChild("HumanoidRootPart") and v.Name == mobname then
-            local mag = (game.Players.LocalPlayer.Character.HumanoidRootPart.Position - v.HumanoidRootPart.Position).magnitude
-            if mag < dist or not dist then
-                dist = mag
-                nearestNPC = v
-            end
+-- Function to populate NPCS table with valid NPCs
+local function populateNPCs()
+    table.clear(NPCS)
+    for _, npc in ipairs(workspace.NPC.Fight:GetChildren()) do
+        if npc:IsA("Model") and npc:FindFirstChild("HumanoidRootPart") then
+            table.insert(NPCS, npc.Name)
         end
     end
-    return nearestNPC
 end
 
--- Initial population of NPCS table
-for i, v in pairs(workspace.NPC.Fight:GetDescendants()) do
-    if v:IsA("Model") and v:FindFirstChild("HumanoidRootPart") then
-        table.insert(NPCS, v.Name) -- Assuming NPC names are unique and can be used as identifiers
-    end
-end
+-- Initial population of NPCs
+populateNPCs()
 
-local Dropdown = Section:CreateDropdown("Select Mobs", NPCS, 1, function(Value)
-    -- Update the selected mobname
+local Dropdown = Section:CreateDropdown("Select Mob", NPCS, 1, function(Value)
+    -- Update selected mob name
     mobname = Value
 end)
 
-local Button = Section:CreateButton("Refresh Mobs", function()
-    -- Clear and update NPCS table
-    NPCS = {}
-    for i, v in pairs(workspace.NPC.Fight:GetDescendants()) do
-        if v:IsA("Model") and v:FindFirstChild("HumanoidRootPart") then
-            table.insert(NPCS, v.Name)
+local function getNPC()
+    local nearestNPC
+    local minDist = math.huge
+
+    for _, npc in ipairs(workspace.NPC.Fight:GetChildren()) do
+        if npc:IsA("Model") and npc:FindFirstChild("HumanoidRootPart") and npc.Name == mobname then
+            local dist = (game.Players.LocalPlayer.Character.HumanoidRootPart.Position - npc.HumanoidRootPart.Position).magnitude
+            if dist < minDist then
+                minDist = dist
+                nearestNPC = npc
+            end
         end
     end
-    Dropdown:SetOptions(NPCS) -- Update dropdown options
+
+    return nearestNPC
+end
+
+local Button = Section:CreateButton("Refresh Mobs", function()
+    -- Refresh NPC list
+    populateNPCs()
+    Dropdown:SetOptions(NPCS)
 end)
 
 local Toggle = Section:CreateToggle("Auto Hit", function(Value)
-    Hit = Value
+    local Hit = Value
     while Hit do
-        task.wait(1) -- Wait for 1 second before checking for enemies
+        task.wait(1) -- Adjust the wait time if needed
+
+        -- Attempt to find and attack the nearest NPC
         pcall(function()
-            local npc = getNPC(mobname)
+            local npc = getNPC()
             if npc then
                 game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame = npc.HumanoidRootPart.CFrame
             end
