@@ -24,7 +24,7 @@ local Dropdown = Section:CreateDropdown("Select Mobs !", NPCS, 0, function(t)
 end)
 local Button = Section:CreateButton("Refresh [Mob]", function(Value)
     table.clear(NPCS)
-    for i, v in pairs(workspace.Lives:GetDescendants()) do
+    for i, v in pairs(workspace.NPC.Fight:GetDescendants()) do
         if v:IsA "Model" and v:FindFirstChild("HumanoidRootPart") then
             if not table.find(NPCS, tostring(v)) then
                 table.insert(NPCS, tostring(v))
@@ -34,9 +34,8 @@ local Button = Section:CreateButton("Refresh [Mob]", function(Value)
     end
 end)
 local Toggle = Section:CreateToggle("Auto [Hit]", function(Value)
-_G.Hit = Value
-while _G.Hit do
-wait(1)  -- Wait for 1 second before checking for enemies
+Hit = Value
+while Hit do task.wait()  -- Wait for 1 second before checking for enemies
 pcall(function()
 for i,v in pairs(workspace.NPC.Fight:GetDescendants()) do
 if v.Name == PlayerTP1 then
