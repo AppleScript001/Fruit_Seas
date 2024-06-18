@@ -1,70 +1,62 @@
-local Library = loadstring(game:HttpGet("https://pastebin.com/raw/KNBp0LRy"))()
-
-repeat
-    wait()
-until game:IsLoaded()
-
+local Library = loadstring(game:HttpGet("https://pastebin.com/raw/KNBp0LRy"), "Coastified UI")()
+repeat wait() until game:IsLoaded()
 game:GetService("Players").LocalPlayer.Idled:connect(function()
-    game:GetService("VirtualUser"):ClickButton2(Vector2.new())
+game:GetService("VirtualUser"):ClickButton2(Vector2.new())
 end)
 
-local Window = Library:NewWindow("Fruit Seas")
+local Window = Library:NewWindow("Pirate's Destiny")
+
 local Section = Window:NewSection("AutoFarm")
 
-local NPCS = {}
+local PlayerTP1
+local TweenService = game:GetService("TweenService")
 
--- Function to populate NPCS table with valid NPCs
-local function populateNPCs()
-    table.clear(NPCS)
-    for _, npc in ipairs(workspace.NPC.Fight:GetChildren()) do
-        if npc:IsA("Model") and npc:FindFirstChild("HumanoidRootPart") then
-            table.insert(NPCS, npc.Name)
-        end
-    end
-end
-
--- Initial population of NPCs
-populateNPCs()
-
-local Dropdown = Section:CreateDropdown("Select Mob", NPCS, 1, function(Value)
-    -- Update selected mob name
-    mobname = Value
+local Dropdown = Section:CreateDropdown("Select Mobs!", {"Bandit", "Bandit Leader"}, 0, function(t)
+    PlayerTP1 = t
 end)
 
-local function getNPC()
-    local nearestNPC
-    local minDist = math.huge
-
-    for _, npc in ipairs(workspace.NPC.Fight:GetChildren()) do
-        if npc:IsA("Model") and npc:FindFirstChild("HumanoidRootPart") and npc.Name == mobname then
-            local dist = (game.Players.LocalPlayer.Character.HumanoidRootPart.Position - npc.HumanoidRootPart.Position).magnitude
-            if dist < minDist then
-                minDist = dist
-                nearestNPC = npc
-            end
-        end
+local Toggle = Section:CreateToggle("Auto [Attack]", function(Value)
+_G.Attack = Value
+while _G.Attack do
+wait(1)  -- Wait for 1 second before checking for enemies
+pcall(function()
+for i,v in pairs(workspace.Mobs.FooshaVillage:GetDescendants()) do
+if v.Name == PlayerTP1 then
+if v.Humanoid.Health > 0 then
+repeat
+    local toolName = "Combat" -- Replace "YourToolNameHere" with the name of your tool
+    
+    local LocalPlayer = game:GetService("Players").LocalPlayer
+for i, v in pairs(LocalPlayer.Backpack:GetChildren()) do
+    if v:IsA('Tool') and v.Name == toolName then
+        v.Parent = LocalPlayer.Character
+        break -- Stop the loop after picking up the tool
     end
-
-    return nearestNPC
 end
+local args = {
+    [1] = workspace:WaitForChild("Mobs"):WaitForChild("FooshaVillage"):WaitForChild(PlayerTP1):WaitForChild("HumanoidRootPart"),
+    [2] = "1",
+    [3] = 2
+}
 
-local Button = Section:CreateButton("Refresh Mobs", function()
-    -- Refresh NPC list
-    populateNPCs()
-    Dropdown:SetOptions(NPCS)
+game:GetService("ReplicatedStorage"):WaitForChild("RemoteEvents"):WaitForChild("MeleeHitEvent"):FireServer(unpack(args))
+
+game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame = v.HumanoidRootPart.CFrame * CFrame.new(0,0,5)
+wait()  -- Wait a short time before checking again
+until not _G.Attack or v.Humanoid.Health <= 0
+end
+end
+end
 end)
-
-local Toggle = Section:CreateToggle("Auto Hit", function(Value)
-    local Hit = Value
-    while Hit do
-        task.wait(1) -- Adjust the wait time if needed
-
-        -- Attempt to find and attack the nearest NPC
-        pcall(function()
-            local npc = getNPC()
-            if npc then
-                game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame = npc.HumanoidRootPart.CFrame
-            end
-        end)
+local Player = game.Players.LocalPlayer
+local function onCharacterAdded(character)
+    character.Archivable = false
+    character:WaitForChild("HumanoidRootPart").Anchored = false
+    if Player.Character then
+            onCharacterAdded(Player.Character)
     end
+end
+    
+Player.CharacterAdded:Connect(onCharacterAdded)
+end
 end)
